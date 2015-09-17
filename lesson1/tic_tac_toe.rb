@@ -1,7 +1,3 @@
-def array_range(start, finish)
-  (start..finish).to_a()
-end
-
 # Initializes a new board as a hash, keys are the positions and values are the symbols to be printed on the board
 def new_board
   Hash[
@@ -11,7 +7,7 @@ def new_board
       # location of the "+" junctions
       junctions = [56, 62, 124, 130]
       # location of the dotted lines that demarcate the squares
-      dotted_lines = array_range(51, 55).concat(array_range(57, 61)).concat(array_range(63, 67)).concat(array_range(119, 123)).concat(array_range(125, 129)).concat(array_range(131, 135))
+      dotted_lines = [*51..55, *57..61, *63..67, *119..123, *125..129, *131..135]
 
       case
       when horiz_bars.include?(x)
@@ -28,11 +24,11 @@ end
 
 # Player entered position (1 to 9) mapped to board positions where the pieces go
 def pos_to_slot()
-  pos_to_slot = {1 => 19, 2 => 25, 3 => 31, 4 => 87, 5 => 93, 6 => 99, 7 => 155, 8 => 161, 9 => 167}
+  {1 => 19, 2 => 25, 3 => 31, 4 => 87, 5 => 93, 6 => 99, 7 => 155, 8 => 161, 9 => 167}
 end
 
 def pos_ok?(pos, board, pos_to_slot)
-  if board[pos_to_slot[pos]] == " " then true else false end
+  board[pos_to_slot[pos]] == " "
 end
 
 def mark_pos(mark, pos, board, pos_to_slot)
@@ -41,9 +37,9 @@ end
 
 def draw_board(board)
   board_display = ""
-  board.each do |k, v|
+  board.each do |k, _|
     board_display << board[k]
-    if (k + 1) % 17 == 0 then board_display << "\n" end
+    board_display << "\n" if (k + 1) % 17 == 0
   end
   board_display
 end
@@ -61,20 +57,24 @@ def check(*pos)
 end
 
 def check_horiz(board)
-  check([board[19], board[25], board[31]],
-    [board[87], board[93], board[99]],
-    [board[155], board[161], board[167]])
+  check(board.values_at(19, 25, 31),
+    board.values_at(87, 93, 99),
+    board.values_at(155, 161, 167))
 end
 
 def check_vert(board)
-  check([board[19], board[87], board[155]],
-    [board[25], board[93], board[161]],
-    [board[31], board[99], board[167]])
+  check(board.values_at(19, 87, 155),
+    board.values_at(25, 93, 161),
+    board.values_at(31, 99, 167))
 end
 
 def check_diag(board)
-  check([board[19], board[93], board[167]],
-    [board[31], board[93], board[155]])
+  check(board.values_at(19, 93, 167),
+    board.values_at(31, 93, 155))
+end
+
+def match_tied?(board)
+  !board.values_at(19, 25, 31, 87, 93, 99, 155, 161, 167).include?(" ")
 end
 
 # return the winning piece if existing, otherwise return false
@@ -96,38 +96,44 @@ def who_won(mark)
   end
 end
 
+def player_loop(board, computer=nil)
+  player = ""
+  mark = ""
+  loop do
+    if computer
+      player = (1..9).to_a.sample
+      mark = "O"
+    else
+      puts "Choose a position (1 to 9) to place a piece: "
+      player = gets.chomp
+      mark = "X"
+    end
+    break unless !pos_ok?(player.to_i, board, pos_to_slot)
+  end
+  mark_pos(mark, player.to_i, board, pos_to_slot)
+  system "clear"
+  puts draw_board(board)
+end
+
+def check_win(board)
+  if win?(board)
+    who_won(win?(board))
+  end
+end
+
 def start_game()
   board = new_board()
   loop do
     system "clear"
     puts draw_board(board)
-    puts "Choose a position (1 to 9) to place a piece: "
-    player = ""
-    computer = ""
-    loop do
-      player = gets.chomp
-      if pos_ok?(player.to_i, board, pos_to_slot())
-        mark_pos("X", player.to_i, board, pos_to_slot())
-        break
-      end
-    end
-    system "clear"
-    puts draw_board(board)
-    if win?(board)
-      who_won(win?(board))
+    player_loop(board)
+    check_win(board)
+    if win?(board) || match_tied?(board)
       break
     end
-    loop do
-      computer = (1..9).to_a.sample # computer chooses position randomly
-      break if pos_ok?(computer, board, pos_to_slot())
-    end
-    mark_pos("O", computer, board, pos_to_slot())
-    system "clear"
-    puts draw_board(board)
-    if win?(board)
-      who_won(win?(board))
-      break
-    end
+    player_loop(board, :computer)
+    check_win(board)
+    break unless !win?(board)
   end
 end
 
