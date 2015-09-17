@@ -52,50 +52,40 @@ def same_val?(pos1, pos2, pos3)
   pos1 == pos2 && pos2 == pos3 && pos1 != " "
 end
 
-def check_horiz(board)
-  case
-  when same_val?(board[19], board[25], board[31])
-    board[19]
-  when same_val?(board[87], board[93], board[99])
-    board[87]
-  when same_val?(board[155], board[161], board[167])
-    board[155]
-  else false
+def check(*pos)
+  mark = false
+  pos.each do |row|
+    if same_val?(row[0], row[1], row[2]) then mark = row[1] end
   end
+  mark
+end
+
+def check_horiz(board)
+  check([board[19], board[25], board[31]],
+    [board[87], board[93], board[99]],
+    [board[155], board[161], board[167]])
 end
 
 def check_vert(board)
-  case
-  when same_val?(board[19], board[87], board[155])
-    board[19]
-  when same_val?(board[25], board[93], board[161])
-    board[25]
-  when same_val?(board[31], board[99], board[167])
-    board[31]
-  else false
-  end
+  check([board[19], board[87], board[155]],
+    [board[25], board[93], board[161]],
+    [board[31], board[99], board[167]])
 end
 
 def check_diag(board)
-  case
-  when same_val?(board[19], board[93], board[167])
-    board[19]
-  when same_val?(board[31], board[93], board[155])
-    board[31]
-  else false
-  end
+  check([board[19], board[93], board[167]],
+    [board[31], board[93], board[155]])
 end
 
+# return the winning piece if existing, otherwise return false
 def win?(board)
-  case
-  when check_horiz(board)
-    check_horiz(board)
-  when check_vert(board)
-    check_vert(board)
-  when check_diag(board)
-    check_diag(board)
-  else false
+  checks = [method(:check_horiz), method(:check_vert), method(:check_diag)]
+  checks.each do |fn|
+    if fn.call(board)
+      return fn.call(board)
+    end
   end
+  false
 end
 
 def who_won(mark)
