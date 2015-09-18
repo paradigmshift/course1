@@ -22,7 +22,7 @@ def display_suit(i)
 end
 
 def display_card(card)
-  "#{generate_rank(card[0])} of #{generate_suit(card[1])}"
+  "#{display_rank(card[0])} of #{display_suit(card[1])}"
 end
 
 def generate_deck()
@@ -52,24 +52,23 @@ def card_at_random(deck)
   deck.delete_at(rand(deck.length))
 end
 
-def convert_ace(hand)
-  ace = deck.find_index(deck.select { |card| card[0] == 14 }[0])
-  non_ace =  nil
-  ace == 1 ? non_ace = 0 : non_ace = 1
-  11 + deck[non_ace][0] > 21 ? deck[ace][0] = 1 : deck[ace][0] = 11
+def convert_aces(hand)
+  aces = hand.select { |card| card[0] ==14 }
+  aces.each { |card| hand.delete(card) }
+  aces.each do |card|
+    11 + check_card_val(hand) > 21 ? card[0] = 1 : card[0] = 11
+    hand << card
+  end
 end
 
 def check_card_val(deck) # receives array of 2 array elements, [[3,2], [4,1]]
   royals = [11, 12, 13] # jack, queen, king
   converted_deck = deck.map { |card| card.clone }
-  #  converted_deck = deck.clone
-  #  converted_deck = deck.dup
   converted_deck.map do |card| # replaces jack, queen, king with value of 10
     card[0] = 10 if royals.include?(card[0])
   end
 
-  convert_ace(converted_deck) if deck.flatten.include?(14)
-
+  convert_aces(converted_deck) if deck.flatten.include?(14)
   converted_deck.map { |card| card[0] }.reduce(:+)
 end
 
