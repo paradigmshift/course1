@@ -1,4 +1,6 @@
-# Cards are represented mathematically; Rank is represented by the numbers 1 - 10, 11 -> Jack, 12 -> Queen, 13 -> King, and 14 -> Ace. Suit is similar, with 0 -> Diamonds, 1 -> Clubs, 2 -> Spades, and 3 -> Hearts.
+# Cards are represented mathematically; Rank is represented by the numbers 1 -
+# 10, 11 -> Jack, 12 -> Queen, 13 -> King, and 14 -> Ace. Suit is similar, with
+# 0 -> Diamonds, 1 -> Clubs, 2 -> Spades, and 3 -> Hearts.
 
 def display_rank(i)
   rank = Hash[(2..10).to_a.map do |x|
@@ -94,23 +96,6 @@ def deal_first_hand(deck)
   return player_deck, dealer_deck
 end
 
-def blackjack_msg(hand, dealer=nil)
-  if dealer
-    winner = "Dealer"
-  else
-    winner = "Player"
-  end
-  puts "#{winner} has #{display_card(hand[0])} and #{display_card(hand[1])}, blackjack!"
-end
-
-def bust_msg(hand, dealer=nil)
-  msg = ""
-  dealer ? busted = "Dealer" : busted = "Player"
-  msg << "#{busted} has busted!\n"
-  hand.each { |card| msg << "#{display_card(card)}\n" }
-  msg
-end
-
 def bust?(hand)
   check_card_val(hand) > 21 ? true : false
 end
@@ -123,7 +108,6 @@ def player_loop(hand, deck)
     puts "Total value: #{check_card_val(hand)}, Press 1 to hit, 2 to stay: "
     action = gets.chomp
     break if action.to_i == 2
-    # hand << card_at_random(deck)
     hand << hit(deck)
     break if bust?(hand)
   end
@@ -140,20 +124,10 @@ def decide_winner(dealer_hand, player_hand)
   check_card_val(dealer_hand) > check_card_val(player_hand) ? 1 : 0
 end
 
-def winner_msg(dealer=nil)
-  dealer ? winner = "Dealer" : winner = "Player"
-  puts "#{winner} won!"
-end
-
 def show_dealer_cards(hand)
   puts "Dealer's hand: "
   hand.each { |card| puts "#{display_card(card)}" }
   puts "Total value: #{check_card_val(hand)}"
-end
-
-def pls_press_enter_key()
-  puts "Please press ENTER to continue"
-  gets
 end
 
 def show_score(player_score, dealer_score)
@@ -161,67 +135,95 @@ def show_score(player_score, dealer_score)
   puts "Dealer's score is: #{dealer_score}"
 end
 
+def blackjack_msg(hand, player=nil)
+  if player
+    winner = player
+  else
+    winner = "Dealer"
+  end
+  puts "#{winner} has #{display_card(hand[0])} and #{display_card(hand[1])}, blackjack!"
+end
+
+def bust_msg(hand, player=nil)
+  msg = ""
+  player ? busted = player : busted = "Dealer"
+  msg << "#{busted} has busted!\n"
+  hand.each { |card| msg << "#{display_card(card)}\n" }
+  msg
+end
+
+def winner_msg(player=nil)
+  msg = ""
+  player ? winner = player : winner = "Dealer"
+  msg << "#{winner} won!"
+  msg
+end
+
 def status_msg_and_update(player_score, dealer_score, msg, dealer=nil)
-  system "clear"
   puts msg
   dealer ? dealer_score += 1 : player_score += 1
   show_score(player_score, dealer_score)
-  pls_press_enter_key
-  return player_score, dealer_score
+  puts "Play again? (y/n): "
+  answer = gets.chomp
+  return answer, player_score, dealer_score
+end
+
+def someone_blackjack?(player_name, player_score, dealer_score, player_hand, dealer_hand)
+     if blackjack?(player_hand)
+      answer, player_score, dealer_score = status_msg_and_update(player_score,
+      dealer_score, blackjack_msg(player_hand, player_name))
+    elsif blackjack?(dealer_hand)
+      answer, player_score, dealer_score = status_msg_and_update(player_score,
+      dealer_score, blackjack_msg(dealer_hand), :dealer)
+    end
+end
+
+def get_player_name()
+  puts "Please enter your name: "
+  name = gets.chomp
 end
 
 def game_loop()
+  player_name = get_player_name
   deck = generate_playing_deck
   player_score = 0
   dealer_score = 0
   loop do
     player_hand, dealer_hand = deal_first_hand(deck)
-    if blackjack?(player_hand)
-      # blackjack_msg(player_hand)
-      # player_score += 1
-      # show_score(player_score, dealer_score)
-      # pls_press_enter_key
-      player_score, dealer_score = status_msg_and_update(player_score, dealer_score, blackjack_msg(player_hand))
-      next
-    elsif blackjack?(dealer_hand)
-      # blackjack_msg(dealer_hand, :dealer)
-      # dealer_score += 1
-      # show_score(player_score, dealer_score)
-      # pls_press_enter_key
-      player_score, dealer_score = status_msg_and_update(player_score, dealer_score, blackjack_msg(dealer_hand, :dealer), :dealer)
-      next
-    end
+    # check to see if someone blackjacked
+    answer, player_score, dealer_score = someone_blackjack?(player_name,
+    player_score, dealer_score, player_hand, dealer_hand) if
+    blackjack?(player_hand) || blackjack?(dealer_hand)
+
     player_loop(player_hand, deck)
+
     if bust?(player_hand)
-      # bust_msg(player_hand)
-      # dealer_score += 1
-      # show_score(player_score, dealer_score)
-      # pls_press_enter_key
-      player_score, dealer_score = status_msg_and_update(player_score, dealer_score, bust_msg(player_hand), :dealer)
+      answer, player_score, dealer_score = status_msg_and_update(player_score,
+      dealer_score, bust_msg(player_hand, player_name), :dealer)
+        break if answer.downcase == 'n'
       next
     end
+
     dealer_loop(dealer_hand, deck)
+
     if bust?(dealer_hand)
-      # bust_msg(dealer_hand, :dealer)
-      # player_score += 1
-      # show_score(player_score, dealer_score)
-      # pls_press_enter_key
-      player_score, dealer_score = status_msg_and_update(player_score, dealer_score, bust_msg(dealer_hand, :dealer))
+      answer, player_score, dealer_score = status_msg_and_update(player_score,
+      dealer_score, bust_msg(dealer_hand))
+        break if answer.downcase == 'n'
       next
     end
+
     show_dealer_cards(dealer_hand)
+
     case decide_winner(dealer_hand, player_hand)
     when 1
-      winner_msg(:dealer)
-      dealer_score += 1
+      answer, player_score, dealer_score = status_msg_and_update(player_score,
+      dealer_score, winner_msg(), :dealer)
     when 0
-      winner_msg()
-      player_score += 1
+      answer, player_score, dealer_score = status_msg_and_update(player_score,
+      dealer_score, winner_msg(player_name))
     end
-    show_score(player_score, dealer_score)
-    puts "Play again? (y/n): "
-    answer = gets.chomp
-    break if answer.downcase == 'n'
+        break if answer.downcase == 'n'
   end
 end
 
