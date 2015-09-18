@@ -104,9 +104,11 @@ def blackjack_msg(hand, dealer=nil)
 end
 
 def bust_msg(hand, dealer=nil)
+  msg = ""
   dealer ? busted = "Dealer" : busted = "Player"
-  puts "#{busted} has busted!"
-  hand.each { |card| puts "#{display_card(card)}" }
+  msg << "#{busted} has busted!\n"
+  hand.each { |card| msg << "#{display_card(card)}\n" }
+  msg
 end
 
 def bust?(hand)
@@ -115,29 +117,112 @@ end
 
 def player_loop(hand, deck)
   loop do
+    system "clear"
     puts "Your hand: "
     hand.each { |card| puts "#{display_card(card)}" }
     puts "Total value: #{check_card_val(hand)}, Press 1 to hit, 2 to stay: "
     action = gets.chomp
-    hand << card_at_random(deck)
-    break if action.to_i == 2 || bust?(hand)
+    break if action.to_i == 2
+    # hand << card_at_random(deck)
+    hand << hit(deck)
+    break if bust?(hand)
   end
+end
+
+def dealer_loop(hand, deck)
+  loop do
+    hand << hit(deck) if check_card_val(hand) < 17
+    break if check_card_val(hand) >= 17
+  end
+end
+
+def decide_winner(dealer_hand, player_hand)
+  check_card_val(dealer_hand) > check_card_val(player_hand) ? 1 : 0
+end
+
+def winner_msg(dealer=nil)
+  dealer ? winner = "Dealer" : winner = "Player"
+  puts "#{winner} won!"
+end
+
+def show_dealer_cards(hand)
+  puts "Dealer's hand: "
+  hand.each { |card| puts "#{display_card(card)}" }
+  puts "Total value: #{check_card_val(hand)}"
+end
+
+def pls_press_enter_key()
+  puts "Please press ENTER to continue"
+  gets
+end
+
+def show_score(player_score, dealer_score)
+  puts "Player's score is: #{player_score}"
+  puts "Dealer's score is: #{dealer_score}"
+end
+
+def status_msg_and_update(player_score, dealer_score, msg, dealer=nil)
+  system "clear"
+  puts msg
+  dealer ? dealer_score += 1 : player_score += 1
+  show_score(player_score, dealer_score)
+  pls_press_enter_key
+  return player_score, dealer_score
 end
 
 def game_loop()
   deck = generate_playing_deck
   player_score = 0
   dealer_score = 0
-  player_hand, dealer_hand = deal_first_hand(deck)
-  if blackjack?(player_hand)
-    blackjack_msg(player_hand)
-    player_score += 1
-  elsif blackjack?(dealer_hand)
-    blackjack_msg(dealer_hand, :dealer)
-    dealer_score += 1
-  end
-  player_loop(player_hand, deck)
-  if bust?(player_hand)
-    bust_msg(player_hand)
+  loop do
+    player_hand, dealer_hand = deal_first_hand(deck)
+    if blackjack?(player_hand)
+      # blackjack_msg(player_hand)
+      # player_score += 1
+      # show_score(player_score, dealer_score)
+      # pls_press_enter_key
+      player_score, dealer_score = status_msg_and_update(player_score, dealer_score, blackjack_msg(player_hand))
+      next
+    elsif blackjack?(dealer_hand)
+      # blackjack_msg(dealer_hand, :dealer)
+      # dealer_score += 1
+      # show_score(player_score, dealer_score)
+      # pls_press_enter_key
+      player_score, dealer_score = status_msg_and_update(player_score, dealer_score, blackjack_msg(dealer_hand, :dealer), :dealer)
+      next
+    end
+    player_loop(player_hand, deck)
+    if bust?(player_hand)
+      # bust_msg(player_hand)
+      # dealer_score += 1
+      # show_score(player_score, dealer_score)
+      # pls_press_enter_key
+      player_score, dealer_score = status_msg_and_update(player_score, dealer_score, bust_msg(player_hand), :dealer)
+      next
+    end
+    dealer_loop(dealer_hand, deck)
+    if bust?(dealer_hand)
+      # bust_msg(dealer_hand, :dealer)
+      # player_score += 1
+      # show_score(player_score, dealer_score)
+      # pls_press_enter_key
+      player_score, dealer_score = status_msg_and_update(player_score, dealer_score, bust_msg(dealer_hand, :dealer))
+      next
+    end
+    show_dealer_cards(dealer_hand)
+    case decide_winner(dealer_hand, player_hand)
+    when 1
+      winner_msg(:dealer)
+      dealer_score += 1
+    when 0
+      winner_msg()
+      player_score += 1
+    end
+    show_score(player_score, dealer_score)
+    puts "Play again? (y/n): "
+    answer = gets.chomp
+    break if answer.downcase == 'n'
   end
 end
+
+game_loop
