@@ -37,8 +37,8 @@ end
 
 def draw_board(board)
   board_display = ""
-  board.each do |k, _|
-    board_display << board[k]
+  board.each do |k, v|
+    board_display << v 
     board_display << "\n" if (k + 1) % 17 == 0
   end
   board_display
