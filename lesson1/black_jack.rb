@@ -27,12 +27,17 @@ def display_card(card)
   "#{display_rank(card[0])} of #{display_suit(card[1])}"
 end
 
+# def generate_deck()
+#   deck = []
+#   [0, 1, 2, 3].map do |suit|
+#     (2..10).to_a.each { |rank| deck.push([rank, suit]) }
+#     %i(jack queen king ace).each { |rank| deck.push([rank, suit]) }
+#   end
+#   deck
+# end
+
 def generate_deck()
-  deck = []
-  [0, 1, 2, 3].map do |suit|
-    (2..10).to_a.each { |rank| deck.push([rank, suit]) }
-    %i(jack queen king ace).each { |rank| deck.push([rank, suit]) }
-  end
+  deck = (2..10).to_a.concat(%i(jack queen king ace)).product((0..3).to_a)
   deck
 end
 
