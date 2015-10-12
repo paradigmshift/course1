@@ -10,7 +10,9 @@ class Hand
   def <=>(other_hand)
     if self.value == other_hand.value
       0
-    elsif (self.value == 'p' && other_hand.value == 'r') || (self.value == 'r' && other_hand.value == 's') || (self.value == 's' && other_hand.value == 'p')
+    elsif (self.value == 'p' && other_hand.value == 'r') ||
+        (self.value == 'r' && other_hand.value == 's') ||
+      (self.value == 's' && other_hand.value == 'p')
       1
     else
       -1
@@ -21,7 +23,7 @@ end
 
 class Player
 
-  attr_accessor :choice, :score, :hand
+  attr_accessor :score, :hand, :choice
   attr_reader :name
 
   def initialize(name)
