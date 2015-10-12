@@ -34,25 +34,25 @@ class Board
   end
 
   def empty_squares
-    self.board_pos.select { |_, square| square.value == ' '}
+    board_pos.select { |_, square| square.value == ' '}
   end
 
   def mark_square(pos, marker)
-    self.board_pos[pos].value = marker
+    board_pos[pos].value = marker
   end
 
   def draw_board
     system "clear"
     puts "     |     |     "
-    puts "  #{self.board_pos[1].value}  |  #{self.board_pos[2].value}  |  #{self.board_pos[3].value}  "
+    puts "  #{board_pos[1].value}  |  #{board_pos[2].value}  |  #{board_pos[3].value}  "
     puts "     |     |     "
     puts "-----+-----+-----"
     puts "     |     |     "
-    puts "  #{self.board_pos[4].value}  |  #{self.board_pos[5].value}  |  #{self.board_pos[6].value}  "
+    puts "  #{board_pos[4].value}  |  #{board_pos[5].value}  |  #{board_pos[6].value}  "
     puts "     |     |     "
     puts "-----+-----+-----"
     puts "     |     |     "
-    puts "  #{self.board_pos[7].value}  |  #{self.board_pos[8].value}  |  #{self.board_pos[9].value}  "
+    puts "  #{board_pos[7].value}  |  #{board_pos[8].value}  |  #{board_pos[9].value}  "
     puts "     |     |     "
     puts ""
   end
