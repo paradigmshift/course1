@@ -62,7 +62,7 @@ end
 class TicTacToe
 
   def initialize
-    @human = Player.new("Mo", "X")
+    @human = Player.new("Some random guy", "X")
     @computer = Player.new("Computer", "O")
   end
 
@@ -71,6 +71,8 @@ class TicTacToe
   end
 
   def play
+    puts "Please enter your name: "
+    @human.name = gets.chomp
     begin
       new_board
       @current_player = @human
