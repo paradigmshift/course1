@@ -93,7 +93,11 @@ class BlackJack
   def calculate_value(hand)
     total = 0
     hand.map do |card|
-      card.rank.to_i == 0 && card.rank != 'Ace'? total += 10 : total += card.rank.to_i
+      if card.rank.to_i == 0 && card.rank != 'Ace'
+        total += 10
+      else
+        total += card.rank.to_i
+      end
     end
 
     hand.select { |card| card.rank == 'Ace' }.count.times do # check for Aces and ajust accordingly
@@ -132,6 +136,12 @@ class BlackJack
     end
   end
 
+  def current_player_turn_over?
+    bust?(@current_player) ||
+      blackjack?(@current_player) ||
+      calculate_value(@dealer.hand) > 17 && @current_player == @dealer
+  end
+
   def run
     @player.get_name
     begin
@@ -142,14 +152,11 @@ class BlackJack
       when blackjack?(@dealer)
         @current_player = @dealer
       else
-        begin
-          current_player_turn
-        end until bust?(@current_player) || blackjack?(@current_player) ||
-          calculate_value(@dealer.hand) > 17 && @current_player = @dealer
+        current_player_turn until current_player_turn_over?
       end
       case
       when blackjack?(@current_player)
-        message =  "#{@current_player.name} hit blackjack!"
+        message =  "#{@current_player.name} hit blackjack!\n"
         @current_player.score += 1
       when bust?(@current_player)
         message =  "#{@current_player.name} busted!"
